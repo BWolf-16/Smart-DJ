@@ -1,0 +1,112 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for Smart DJ
+title: "[FEATURE] "
+labels: ["enhancement", "feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new feature! Please fill out this form to help us understand your request.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Description
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see implemented.
+      placeholder: A clear and concise description of what you want to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered.
+      placeholder: A clear and concise description of any alternative solutions or features you've considered.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of the application would this feature affect?
+      options:
+        - Frontend (React Web App)
+        - Backend (API Server)
+        - Mobile (React Native App)
+        - AI Service
+        - Music Integration (Spotify/YouTube)
+        - Authentication
+        - Database
+        - UI/UX Design
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would improve my experience
+        - High - Essential for my use case
+        - Critical - Blocking my usage
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe your specific use case for this feature.
+      placeholder: How would you use this feature? What workflow would it enable?
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups/Examples
+      description: If applicable, add mockups, wireframes, or examples from other applications.
+      placeholder: Paste images or links to examples here...
+
+  - type: textarea
+    id: technical
+    attributes:
+      label: Technical Considerations
+      description: Any technical aspects or challenges you think should be considered?
+      placeholder: Implementation ideas, technical challenges, dependencies, etc.
+
+  - type: checkboxes
+    id: complexity
+    attributes:
+      label: Implementation Complexity (your estimate)
+      options:
+        - label: Simple - Small change or addition
+        - label: Medium - Moderate development effort
+        - label: Complex - Significant development effort
+        - label: Major - Would require substantial architecture changes
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to ensure this feature hasn't been requested already
+          required: true
+        - label: I have provided a clear description of the problem and proposed solution
+          required: true
+        - label: I understand this is a public repository and my request will be visible to everyone
+          required: true

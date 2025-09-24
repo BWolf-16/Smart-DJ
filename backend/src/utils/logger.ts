@@ -23,14 +23,14 @@ const colors = {
 winston.addColors(colors);
 
 // Define which transports the logger must use
-const transports = [
+const transports: winston.transport[] = [
   // Console transport
   new winston.transports.Console({
     format: winston.format.combine(
       winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
       winston.format.colorize({ all: true }),
       winston.format.printf(
-        (info) => `${info.timestamp} ${info.level}: ${info.message}`
+        (info: any) => `${info.timestamp} ${info.level}: ${info.message}`
       )
     ),
   }),
@@ -46,7 +46,10 @@ if (process.env.NODE_ENV === 'production') {
         winston.format.timestamp(),
         winston.format.json()
       ),
-    }),
+    })
+  );
+  
+  transports.push(
     new winston.transports.File({
       filename: 'logs/combined.log',
       format: winston.format.combine(

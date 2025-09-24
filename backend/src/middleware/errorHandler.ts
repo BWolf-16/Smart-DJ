@@ -1,13 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger';
-import { SmartDJError } from '@smart-dj/shared';
+
+interface SmartDJError extends Error {
+  statusCode?: number;
+  code?: string;
+  details?: any;
+}
 
 export const errorHandler = (
-  error: Error,
+  error: SmartDJError,
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): void => {
   logger.error('Error Handler:', {
     message: error.message,
     stack: error.stack,
@@ -18,8 +23,8 @@ export const errorHandler = (
   });
 
   // Handle SmartDJ custom errors
-  if (error instanceof SmartDJError) {
-    return res.status(error.statusCode).json({
+  if (error.statusCode && error.code) {
+    res.status(error.statusCode).json({
       success: false,
       error: {
         code: error.code,
@@ -27,11 +32,12 @@ export const errorHandler = (
         details: error.details
       }
     });
+    return;
   }
 
   // Handle Mongoose validation errors
   if (error.name === 'ValidationError') {
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       error: {
         code: 'VALIDATION_ERROR',
@@ -39,11 +45,12 @@ export const errorHandler = (
         details: error.message
       }
     });
+    return;
   }
 
   // Handle Mongoose cast errors
   if (error.name === 'CastError') {
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       error: {
         code: 'INVALID_ID',
@@ -51,11 +58,12 @@ export const errorHandler = (
         details: error.message
       }
     });
+    return;
   }
 
   // Handle JWT errors
   if (error.name === 'JsonWebTokenError') {
-    return res.status(401).json({
+    res.status(401).json({
       success: false,
       error: {
         code: 'INVALID_TOKEN',
@@ -63,10 +71,11 @@ export const errorHandler = (
         details: error.message
       }
     });
+    return;
   }
 
   if (error.name === 'TokenExpiredError') {
-    return res.status(401).json({
+    res.status(401).json({
       success: false,
       error: {
         code: 'TOKEN_EXPIRED',
@@ -74,11 +83,12 @@ export const errorHandler = (
         details: error.message
       }
     });
+    return;
   }
 
   // Handle duplicate key errors
   if (error.name === 'MongoServerError' && (error as any).code === 11000) {
-    return res.status(409).json({
+    res.status(409).json({
       success: false,
       error: {
         code: 'DUPLICATE_ENTRY',
@@ -86,11 +96,12 @@ export const errorHandler = (
         details: 'A record with this information already exists'
       }
     });
+    return;
   }
 
   // Handle rate limiting errors
   if (error.message && error.message.includes('Too many requests')) {
-    return res.status(429).json({
+    res.status(429).json({
       success: false,
       error: {
         code: 'RATE_LIMIT_EXCEEDED',
@@ -98,6 +109,7 @@ export const errorHandler = (
         details: 'Please try again later'
       }
     });
+    return;
   }
 
   // Default server error

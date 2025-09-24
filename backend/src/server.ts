@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import rateLimit from 'express-rate-limit';
+import passport from 'passport';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
@@ -113,6 +114,10 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
   }
 }));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Health check endpoint
 app.get('/health', (req, res) => {

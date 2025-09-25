@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AIMusicChat from './AIMusicChat';
-import SpotifyPlayer from './SpotifyPlayerNew';
+import SpotifyPlayer from './SpotifyPlayer';
 import SpotifySearch from './SpotifySearch';
 
 interface SpotifyProfile {

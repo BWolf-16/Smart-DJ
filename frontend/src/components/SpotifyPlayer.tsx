@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/spotify-player.css';
 
 interface SpotifyPlayerProps {
@@ -11,14 +11,6 @@ declare global {
     Spotify: any;
   }
 }
-
-const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ className = "" }) => {
-  const [currentTrack, setCurrentTrack] = useState<CurrentTrack | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [volume, setVolume] = useState(50);
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
-  const [webPlayer, setWebPlayer] = useState<any>(null);
-  const [deviceId, setDeviceId] = useState<string>('');
 
 interface CurrentTrack {
   item?: {
@@ -58,21 +50,41 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ className = '' }) => {
   const fetchCurrentTrack = async () => {
     try {
       const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.log('🎵 SpotifyPlayer: No auth token found');
+        return;
+      }
+
+      console.log('🎵 SpotifyPlayer: Fetching current track...');
       const response = await fetch('http://127.0.0.1:8080/api/auth/spotify/current', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
+      console.log('🎵 SpotifyPlayer: API Response Status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('🎵 SpotifyPlayer: Raw API Response:', data);
+        console.log('🎵 SpotifyPlayer: Track Data:', data.data);
+        console.log('🎵 SpotifyPlayer: Has Item?', !!data.data?.item);
+        console.log('🎵 SpotifyPlayer: Is Playing?', data.data?.is_playing);
+        
         setCurrentTrack(data.data);
         if (data.data?.device?.volume_percent !== undefined) {
           setVolume(data.data.device.volume_percent);
         }
+      } else if (response.status === 401) {
+        console.log('🎵 SpotifyPlayer: Auth token expired, cleaning up...');
+        localStorage.removeItem('authToken');
+      } else {
+        console.error('🎵 SpotifyPlayer: Failed to fetch current track:', response.status);
+        const errorData = await response.text();
+        console.error('🎵 SpotifyPlayer: Error Response:', errorData);
       }
     } catch (error) {
-      console.error('Error fetching current track:', error);
+      console.error('🎵 SpotifyPlayer: Error fetching current track:', error);
     }
   };
 

@@ -39,6 +39,13 @@ const SpotifySearch: React.FC<SpotifySearchProps> = ({ className = '' }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.log('🔍 No auth token found for search');
+        setLoading(false);
+        return;
+      }
+
+      console.log('🔍 Searching for:', query);
       const response = await fetch(`http://127.0.0.1:8080/api/auth/spotify/search?q=${encodeURIComponent(query)}&type=track&limit=20`, {
         credentials: 'include',
         headers: {
@@ -48,9 +55,13 @@ const SpotifySearch: React.FC<SpotifySearchProps> = ({ className = '' }) => {
 
       if (response.ok) {
         const data: SearchResult = await response.json();
+        console.log('🔍 Search results:', data);
         setSearchResults(data.tracks.items);
+      } else if (response.status === 401) {
+        console.log('🔍 Auth token expired for search, please re-authenticate');
+        localStorage.removeItem('authToken');
       } else {
-        console.error('❌ Search failed');
+        console.error('❌ Search failed:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('❌ Search error:', error);

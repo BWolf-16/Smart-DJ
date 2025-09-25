@@ -13,9 +13,10 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    host: true, // Bind to all interfaces (localhost and 127.0.0.1)
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://127.0.0.1:8080',
         changeOrigin: true,
         secure: false
       },

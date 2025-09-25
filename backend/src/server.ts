@@ -13,7 +13,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
 // Import routes
-import authRoutes from './routes/auth';
+import authRoutes from './routes/auth-simple'; // Use simplified auth for testing
 import userRoutes from './routes/users';
 import spotifyRoutes from './routes/spotify';
 import youtubeRoutes from './routes/youtube';
@@ -30,8 +30,18 @@ import { connectDatabase } from './config/database';
 import { initializeRedis } from './config/redis';
 import { setupSocketIO } from './services/socket';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from root directory
+dotenv.config({ path: require('path').resolve(__dirname, '../../.env') });
+
+// Debug environment variables
+console.log('🔧 Environment Debug:');
+console.log('SPOTIFY_CLIENT_ID:', process.env.SPOTIFY_CLIENT_ID ? 'Set ✅' : 'Missing ❌');
+console.log('SPOTIFY_CLIENT_SECRET:', process.env.SPOTIFY_CLIENT_SECRET ? 'Set ✅' : 'Missing ❌');
+console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set ✅' : 'Missing ❌');
+
+// Configure Passport after environment variables are loaded
+import { configurePassport } from './config/passport';
+configurePassport();
 
 const app = express();
 const server = createServer(app);
@@ -69,7 +79,7 @@ app.use(helmet({
 // CORS configuration
 app.use(cors({
   origin: (origin, callback) => {
-    const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',');
+    const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://127.0.0.1:3000').split(',');
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -148,13 +158,12 @@ app.use(errorHandler);
 // Initialize services and start server
 const startServer = async () => {
   try {
-    // Connect to MongoDB
-    await connectDatabase();
-    logger.info('Connected to MongoDB');
-
-    // Initialize Redis
-    await initializeRedis();
-    logger.info('Connected to Redis');
+    // Skip database for now - focus on Spotify integration
+    // TODO: Setup MongoDB and Redis later
+    // await connectDatabase();
+    // logger.info('Connected to MongoDB');
+    // await initializeRedis();
+    // logger.info('Connected to Redis');
 
     // Start the server
     server.listen(PORT, () => {
@@ -178,7 +187,10 @@ process.on('uncaughtException', (error) => {
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
+  // Don't exit in development - just log the error
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
+  }
 });
 
 // Graceful shutdown

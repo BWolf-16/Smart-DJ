@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@types/passport-spotify": "^2.0.4",
-    "axios": "^1.6.2",
+    "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "connect-mongo": "^5.1.0",
@@ -33,7 +33,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
-    "openai": "^4.20.1",
+    "openai": "^4.104.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",

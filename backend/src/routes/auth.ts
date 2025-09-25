@@ -2,68 +2,12 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import passport from 'passport';
-import { Strategy as SpotifyStrategy } from 'passport-spotify';
 import SpotifyWebApi from 'spotify-web-api-node';
-import { User } from '../models/User';
+// import { User } from '../models/User'; // TODO: Enable when MongoDB is ready
 import { validateLogin, validateRegister } from '../middleware/validation';
 import { asyncHandler } from '../middleware/asyncHandler';
 
 const router = Router();
-
-// Configure Spotify OAuth strategy
-passport.use(new SpotifyStrategy({
-  clientID: process.env.SPOTIFY_CLIENT_ID!,
-  clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
-  callbackURL: process.env.SPOTIFY_REDIRECT_URI!
-}, async (accessToken: string, refreshToken: string, expires_in: number, profile: any, done: any) => {
-  try {
-    // Check if user already exists
-    let user = await User.findOne({ spotifyId: profile.id });
-    
-    if (user) {
-      // Update existing user with new tokens
-      user.spotifyAccessToken = accessToken;
-      user.spotifyRefreshToken = refreshToken;
-      user.spotifyTokenExpiry = new Date(Date.now() + expires_in * 1000);
-      user.spotifyConnected = true;
-      await user.save();
-      return done(null, user);
-    }
-    
-    // Create new user
-    user = new User({
-      spotifyId: profile.id,
-      email: profile.emails?.[0]?.value || `${profile.id}@spotify.local`,
-      username: profile.username || profile.displayName || profile.id,
-      displayName: profile.displayName,
-      avatar: profile.photos?.[0]?.value,
-      spotifyAccessToken: accessToken,
-      spotifyRefreshToken: refreshToken,
-      spotifyTokenExpiry: new Date(Date.now() + expires_in * 1000),
-      spotifyConnected: true,
-      youtubeConnected: false
-    });
-    
-    await user.save();
-    return done(null, user);
-  } catch (error) {
-    return done(error, null);
-  }
-}));
-
-// Serialize user for session
-passport.serializeUser((user: any, done) => {
-  done(null, user._id);
-});
-
-passport.deserializeUser(async (id: string, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (error) {
-    done(error, null);
-  }
-});
 
 // Register new user
 router.post('/register', validateRegister, asyncHandler(async (req: any, res: any) => {

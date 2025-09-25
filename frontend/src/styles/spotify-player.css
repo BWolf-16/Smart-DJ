@@ -1,0 +1,144 @@
+/* Enhanced Spotify Player Styles */
+
+.spotify-player {
+  background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+}
+
+.spotify-player-dark {
+  background: linear-gradient(135deg, #191414 0%, #282828 100%);
+}
+
+/* Volume Slider Styling */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #1db954;
+  cursor: pointer;
+  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}
+
+.slider::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #1db954;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}
+
+.slider::-webkit-slider-track {
+  height: 4px;
+  cursor: pointer;
+  background: #ddd;
+  border-radius: 2px;
+}
+
+.slider::-moz-range-track {
+  height: 4px;
+  cursor: pointer;
+  background: #ddd;
+  border-radius: 2px;
+  border: none;
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+  transition: width 0.1s linear;
+}
+
+/* Control Button Hover Effects */
+.control-button {
+  transition: all 0.2s ease;
+  transform: scale(1);
+}
+
+.control-button:hover {
+  transform: scale(1.05);
+}
+
+.control-button:active {
+  transform: scale(0.95);
+}
+
+/* AI Chat Enhancements */
+.ai-message {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Spotify Brand Colors */
+.spotify-green { color: #1db954; }
+.bg-spotify-green { background-color: #1db954; }
+.spotify-black { color: #191414; }
+.bg-spotify-black { background-color: #191414; }
+.spotify-gray { color: #535353; }
+.bg-spotify-gray { background-color: #535353; }
+
+/* Loading Animations */
+.pulse-green {
+  animation: pulseGreen 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseGreen {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Volume Control Positioning */
+.volume-container {
+  position: relative;
+}
+
+.volume-slider {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  background: white;
+  border-radius: 20px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+/* Media Controls Grid */
+.media-controls {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .media-controls {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .volume-slider {
+    position: static;
+    transform: none;
+    margin: 8px 0 0 0;
+  }
+}

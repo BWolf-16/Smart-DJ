@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AIMusicChat from './AIMusicChat';
+import SpotifyPlayer from './SpotifyPlayerNew';
+import SpotifySearch from './SpotifySearch';
 
 interface SpotifyProfile {
   display_name: string;
@@ -19,6 +22,7 @@ interface UserData {
   spotify: {
     playlists: any[];
     topTracks: any[];
+    recentTracks: any[];
     connected: boolean;
   };
 }
@@ -31,15 +35,49 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = localStorage.getItem('authToken');
+      console.log('🎛️ Dashboard: Starting token check...');
+      
+      // Helper function to get cookie value
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift();
+        return null;
+      };
+      
+      // Check localStorage, sessionStorage, and cookies for the token
+      const localToken = localStorage.getItem('authToken');
+      const sessionToken = sessionStorage.getItem('authToken');
+      const cookieToken = getCookie('authToken');
+      
+      console.log('📦 LocalStorage token:', localToken ? 'Found (' + localToken.length + ' chars)' : 'Not found');
+      console.log('📦 SessionStorage token:', sessionToken ? 'Found (' + sessionToken.length + ' chars)' : 'Not found');
+      console.log('🍪 Cookie token:', cookieToken ? 'Found (' + cookieToken.length + ' chars)' : 'Not found');
+      console.log('🍪 All cookies:', document.cookie);
+      
+      let token = localToken || sessionToken || cookieToken;
+      
+      // Migrate token to localStorage for persistence
+      if (!localToken && (sessionToken || cookieToken)) {
+        const sourceToken = sessionToken || cookieToken;
+        const source = sessionToken ? 'sessionStorage' : 'cookie';
+        console.log(`🔄 Moving token from ${source} to localStorage...`);
+        token = sourceToken;
+        localStorage.setItem('authToken', token!);
+        if (sessionToken) sessionStorage.removeItem('authToken');
+        console.log('✅ Token migration completed');
+      }
       
       if (!token) {
+        console.log('❌ No token found, redirecting to login...');
         navigate('/');
         return;
       }
+      
+      console.log('✅ Token found, fetching user data...');
 
       try {
-        const response = await fetch('http://localhost:3001/api/auth/spotify/profile', {
+        const response = await fetch('http://127.0.0.1:8080/api/auth/spotify/profile', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -153,39 +191,93 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
+          {/* Spotify Player Controls */}
+          <SpotifyPlayer className="mb-6" />
+
+          {/* Search and Play Music */}
+          <SpotifySearch className="mb-6" />
+
           {/* AI Music Assistant */}
-          <div className="bg-white overflow-hidden shadow rounded-lg mb-6">
-            <div className="px-4 py-5 sm:p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                AI Music Assistant
-              </h2>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-gray-600 mb-4">
-                  Ask your AI DJ for music recommendations! Try phrases like:
-                </p>
-                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                  <li>"I need music for studying"</li>
-                  <li>"Play something to kill the final boss"</li>
-                  <li>"Chill vibes for the weekend"</li>
-                  <li>"High energy workout playlist"</li>
-                </ul>
-                <button className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                  Start AI Session
-                </button>
+          <AIMusicChat userData={userData} />
+
+          {/* Top Tracks */}
+          {userData?.spotify.topTracks && userData.spotify.topTracks.length > 0 && (
+            <div className="bg-white overflow-hidden shadow rounded-lg mb-6">
+              <div className="px-4 py-5 sm:p-6">
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  🎵 Your Top Tracks
+                </h2>
+                <div className="space-y-3">
+                  {userData.spotify.topTracks.slice(0, 5).map((track: any, index: number) => (
+                    <div key={track.id} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                      <span className="text-lg font-bold text-green-600 w-8">#{index + 1}</span>
+                      {track.album?.images?.[2] && (
+                        <img
+                          src={track.album.images[2].url}
+                          alt={track.name}
+                          className="w-12 h-12 rounded"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{track.name}</p>
+                        <p className="text-sm text-gray-500 truncate">
+                          {track.artists.map((artist: any) => artist.name).join(', ')}
+                        </p>
+                        <p className="text-xs text-gray-400">{track.album.name}</p>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {Math.floor(track.duration_ms / 60000)}:{String(Math.floor((track.duration_ms % 60000) / 1000)).padStart(2, '0')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Recent Playlists */}
+          {/* Recent Activity */}
+          {userData?.spotify.recentTracks && userData.spotify.recentTracks.length > 0 && (
+            <div className="bg-white overflow-hidden shadow rounded-lg mb-6">
+              <div className="px-4 py-5 sm:p-6">
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  🕐 Recently Played
+                </h2>
+                <div className="space-y-3">
+                  {userData.spotify.recentTracks.slice(0, 5).map((item: any, index: number) => (
+                    <div key={`${item.track.id}-${index}`} className="flex items-center space-x-4 p-2 hover:bg-gray-50 rounded">
+                      {item.track.album?.images?.[2] && (
+                        <img
+                          src={item.track.album.images[2].url}
+                          alt={item.track.name}
+                          className="w-10 h-10 rounded"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{item.track.name}</p>
+                        <p className="text-sm text-gray-500 truncate">
+                          {item.track.artists.map((artist: any) => artist.name).join(', ')}
+                        </p>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {new Date(item.played_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Playlists */}
           {userData?.spotify.playlists && userData.spotify.playlists.length > 0 && (
             <div className="bg-white overflow-hidden shadow rounded-lg">
               <div className="px-4 py-5 sm:p-6">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
-                  Your Playlists
+                  📚 Your Playlists
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {userData.spotify.playlists.slice(0, 6).map((playlist: any) => (
-                    <div key={playlist.id} className="border rounded-lg p-4">
+                    <div key={playlist.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                       {playlist.images?.[0] && (
                         <img
                           src={playlist.images[0].url}
@@ -193,9 +285,14 @@ const Dashboard: React.FC = () => {
                           className="w-full h-32 object-cover rounded mb-2"
                         />
                       )}
-                      <h3 className="font-medium text-sm">{playlist.name}</h3>
+                      <h3 className="font-medium text-sm truncate" title={playlist.name}>
+                        {playlist.name}
+                      </h3>
                       <p className="text-xs text-gray-500">
                         {playlist.tracks.total} tracks
+                      </p>
+                      <p className="text-xs text-gray-400 truncate">
+                        by {playlist.owner.display_name}
                       </p>
                     </div>
                   ))}

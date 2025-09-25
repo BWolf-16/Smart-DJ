@@ -24,7 +24,7 @@ const SpotifyLogin: React.FC = () => {
   const handleSpotifyLogin = () => {
     setIsLoading(true);
     // Redirect to backend Spotify OAuth endpoint
-    window.location.href = `http://localhost:3001/api/auth/spotify`;
+    window.location.href = `http://127.0.0.1:8080/api/auth/spotify`;
   };
 
   return (
